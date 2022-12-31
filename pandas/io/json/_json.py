@@ -183,20 +183,20 @@ def to_json(
     ).write()
 
     if orient == "split" and isinstance(obj, DataFrame):
-        if  isinstance( obj.columns, MultiIndex):
+        if isinstance(obj.columns, MultiIndex):
             lst = []
-            #backwards of multindex.fromArray
+            # backwards of multindex.fromArray
             for i in range(len(obj.columns[0])):
                 sub = []
                 for j in range(len(obj.columns)):
                     sub.append(obj.columns[j][i])
-                    
+
                 lst.append(sub)
             newS = loads(s)
-            #fixes columns to original columns
+            # fixes columns to original columns
             newS["columns"] = lst
             s = dumps(newS)
-            
+
     if lines:
         s = convert_to_line_delimits(s)
 
@@ -754,7 +754,6 @@ def read_json(
         storage_options=storage_options,
         encoding_errors=encoding_errors,
     )
-    # print(json_reader)
     if chunksize:
         return json_reader
     else:
@@ -915,7 +914,7 @@ class JsonReader(abc.Iterator, Generic[FrameSeriesStrT]):
                     data_lines = data.split("\n")
                     obj = self._get_object_parser(self._combine_lines(data_lines))
             else:
-                obj = self._get_object_parser(self.data) #here
+                obj = self._get_object_parser(self.data)  # here
         return obj
 
     def _get_object_parser(self, json) -> DataFrame | Series:
@@ -935,7 +934,7 @@ class JsonReader(abc.Iterator, Generic[FrameSeriesStrT]):
         }
         obj = None
         if typ == "frame":
-            obj = FrameParser(json, **kwargs).parse() #here
+            obj = FrameParser(json, **kwargs).parse()  # here
 
         if typ == "series" or obj is None:
             if not isinstance(dtype, bool):
@@ -1256,24 +1255,14 @@ class FrameParser(Parser):
                 loads(json, precise_float=self.precise_float), dtype=None
             )
         elif orient == "split":
-            # print(json)
-            # print(loads(json, precise_float=self.precise_float))
-            # print(loads(json, precise_float=self.precise_float)['columns'])
-            # [["2022", "2022"], ['JAN', 'FEB']]
+
             decoded = {
                 str(k): v
                 for k, v in loads(json, precise_float=self.precise_float).items()
             }
-            # print(loads(json, precise_float=self.precise_float).items())
-            # print(decoded)
             self.check_keys_split(decoded)
-            # print(MultiIndex.from_arrays(dict[**decoded]))
-            # print("this is json " + json)
-            # self.obj = DataFrame(loads(json, precise_float=self.precise_float)["data"], columns=loads(json, precise_float=self.precise_float)["columns"])
             self.obj = DataFrame(dtype=None, **decoded)
-            # print(self.obj)
-            # print(self.obj)
-            #here
+
         elif orient == "index":
             self.obj = DataFrame.from_dict(
                 loads(json, precise_float=self.precise_float),
